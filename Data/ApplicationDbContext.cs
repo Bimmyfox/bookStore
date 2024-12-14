@@ -18,5 +18,14 @@ namespace BookStore.Data
             // connect to postgres with connection string from app settings
             options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Category>().HasData(
+                new Category {Id = 1, Name="Action", DisplayOrder = 1 },
+                new Category {Id = 2, Name="Documentary", DisplayOrder = 2 },
+                new Category {Id = 3, Name="Science", DisplayOrder = 3 }
+            );
+        }
     }   
 }
