@@ -18,5 +18,19 @@ namespace BookStore.Controllers
             List<Category> objCategoryList = db.Categories.ToList();
             return View(objCategoryList);
         }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(Category category)
+        {
+            db.Categories.Add(category);
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
     }
 }
