@@ -1,6 +1,7 @@
 using BookStore.Data;
 using BookStore.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BookStore.Controllers
 {
@@ -27,10 +28,74 @@ namespace BookStore.Controllers
         [HttpPost]
         public IActionResult Create(Category category)
         {
-            db.Categories.Add(category);
+            if(category.Name == "test")
+            {
+                ModelState.AddModelError("", "Invalid value - test");
+            }
+            if(ModelState.IsValid)
+            {
+                db.Categories.Add(category);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View();
+        }
+
+
+        public IActionResult Edit(int? id)
+        {
+            if(id == null || id == 0)
+            {
+                return NotFound();
+            }
+            Category? category = db.Categories.Find(id);
+            // var category2 = db.Categories.FirstOrDefault(u => u.Id == id);
+            // var category3 = db.Categories.Where(u => u.Id == id).FirstOrDefault();
+            if(category == null)
+            {
+                return NotFound();
+            }
+            return View(category);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Category category)
+        {
+            if(ModelState.IsValid)
+            {
+                db.Categories.Update(category);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View();
+        }
+
+
+         public IActionResult Delete(int? id)
+        {
+            if(id == null || id == 0) return NotFound();
+
+            Category? category = db.Categories.Find(id);
+            if(category == null)
+            {
+                return NotFound();
+            }
+            return View(category);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public IActionResult DeletePOST(int? id)
+        {
+            if(id == null || id == 0) return NotFound();
+
+            Category? category = db.Categories.Find(id);
+            if(category == null)
+            {
+                return NotFound();
+            }
+            db.Categories.Remove(category);
             db.SaveChanges();
             return RedirectToAction("Index");
         }
-
     }
 }
