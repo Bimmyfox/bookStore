@@ -36,6 +36,7 @@ namespace BookStore.Controllers
             {
                 db.Categories.Add(category);
                 db.SaveChanges();
+                TempData["success"]="Category created successfully";
                 return RedirectToAction("Index");
             }
             return View();
@@ -65,6 +66,7 @@ namespace BookStore.Controllers
             {
                 db.Categories.Update(category);
                 db.SaveChanges();
+                TempData["success"]="Category edited successfully";
                 return RedirectToAction("Index");
             }
             return View();
@@ -95,6 +97,7 @@ namespace BookStore.Controllers
             }
             db.Categories.Remove(category);
             db.SaveChanges();
+            TempData["success"]="Category deleted successfully";
             return RedirectToAction("Index");
         }
     }
