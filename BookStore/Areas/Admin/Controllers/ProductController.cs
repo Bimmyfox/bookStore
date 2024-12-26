@@ -1,6 +1,8 @@
 using BookStore.DataAccess.Repository;
 using BookStore.Models;
+using BookStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookStore.Areas.Admin.Controllers
 {
@@ -23,24 +25,39 @@ namespace BookStore.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            ProductVM productVM = new()
+            {
+                CategoryList = unitOfWork.CategoryRepository.GetAll()
+                .Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                }),
+                Product = new Product()
+            };
+            return View(productVM);
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
+        public IActionResult Create(ProductVM productVM)
         {
-            if(product.Title == "test")
-            {
-                ModelState.AddModelError("", "Invalid value - test");
-            }
             if(ModelState.IsValid)
             {
-                unitOfWork.ProductRepository.Add(product);
+                unitOfWork.ProductRepository.Add(productVM.Product);
                 unitOfWork.Save();
                 TempData["success"]="Product created successfully";
                 return RedirectToAction("Index");
             }
-            return View();
+            else
+            {
+                productVM.CategoryList = unitOfWork.CategoryRepository.GetAll()
+                    .Select(u => new SelectListItem
+                    {
+                        Text = u.Name,
+                        Value = u.Id.ToString()
+                    });
+                return View(productVM);
+            }
         }
 
 
@@ -51,8 +68,6 @@ namespace BookStore.Areas.Admin.Controllers
                 return NotFound();
             }
             Product? product =  unitOfWork.ProductRepository.Get(u => u.Id == id);
-            // var product2 =  unitOfWork.ProductRepository.Categories.FirstOrDefault(u => u.Id == id);
-            // var product3 =  unitOfWork.ProductRepository.Categories.Where(u => u.Id == id).FirstOrDefault();
             if(product == null)
             {
                 return NotFound();
@@ -65,8 +80,8 @@ namespace BookStore.Areas.Admin.Controllers
         {
             if(ModelState.IsValid)
             {
-                 unitOfWork.ProductRepository.Update(product);
-                 unitOfWork.Save();
+                unitOfWork.ProductRepository.Update(product);
+                unitOfWork.Save();
                 TempData["success"]="Product edited successfully";
                 return RedirectToAction("Index");
             }
