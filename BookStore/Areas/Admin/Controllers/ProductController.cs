@@ -11,10 +11,12 @@ namespace BookStore.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
-        public ProductController(IUnitOfWork unitOfWork)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             this.unitOfWork = unitOfWork;
+            this.webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
@@ -23,7 +25,7 @@ namespace BookStore.Areas.Admin.Controllers
             return View(objProductList);
         }
 
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
             ProductVM productVM = new()
             {
@@ -35,15 +37,54 @@ namespace BookStore.Areas.Admin.Controllers
                 }),
                 Product = new Product()
             };
-            return View(productVM);
+            if(id == null || id == 0)
+            {
+                //create
+                return View(productVM);
+            }
+            else
+            {
+                //update
+                productVM.Product = unitOfWork.ProductRepository.Get(u => u.Id == id);
+                return View(productVM);
+            }
         }
 
         [HttpPost]
-        public IActionResult Create(ProductVM productVM)
+        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
         {
             if(ModelState.IsValid)
             {
-                unitOfWork.ProductRepository.Add(productVM.Product);
+                string wwwRootPath = webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string productPath = Path.Combine(wwwRootPath, @"images/product");
+
+                    if(!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                    {
+                        //delete old img
+                        var oldImgPath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('/'));
+                        if(System.IO.File.Exists(oldImgPath))
+                        {
+                            System.IO.File.Delete(oldImgPath);
+                        }
+                    }
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                    productVM.Product.ImageUrl = @"/images/product/" + fileName;
+                }
+
+                if(productVM.Product.Id == 0)
+                {
+                    unitOfWork.ProductRepository.Add(productVM.Product);
+                }
+                else
+                {
+                    unitOfWork.ProductRepository.Update(productVM.Product);
+                }
                 unitOfWork.Save();
                 TempData["success"]="Product created successfully";
                 return RedirectToAction("Index");
@@ -61,35 +102,7 @@ namespace BookStore.Areas.Admin.Controllers
         }
 
 
-        public IActionResult Edit(int? id)
-        {
-            if(id == null || id == 0)
-            {
-                return NotFound();
-            }
-            Product? product =  unitOfWork.ProductRepository.Get(u => u.Id == id);
-            if(product == null)
-            {
-                return NotFound();
-            }
-            return View(product);
-        }
-
-        [HttpPost]
-        public IActionResult Edit(Product product)
-        {
-            if(ModelState.IsValid)
-            {
-                unitOfWork.ProductRepository.Update(product);
-                unitOfWork.Save();
-                TempData["success"]="Product edited successfully";
-                return RedirectToAction("Index");
-            }
-            return View();
-        }
-
-
-         public IActionResult Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if(id == null || id == 0) return NotFound();
 
