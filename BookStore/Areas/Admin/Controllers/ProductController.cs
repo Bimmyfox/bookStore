@@ -21,7 +21,7 @@ namespace BookStore.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            List<Product> objProductList = unitOfWork.ProductRepository.GetAll().ToList();
+            List<Product> objProductList = unitOfWork.ProductRepository.GetAll(includeProperties: "Category").ToList();
             return View(objProductList);
         }
 
