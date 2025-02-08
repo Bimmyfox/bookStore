@@ -3,11 +3,14 @@ using BookStore.Models;
 using BookStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using BookStore.Utility;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookStore.Areas.Admin.Controllers
 {
     
     [Area("Admin")]
+    [Authorize(Roles = SD.ROLE_ADMIN)]
     public class ProductController : Controller
     {
         private readonly IUnitOfWork unitOfWork;
