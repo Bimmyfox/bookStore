@@ -11,6 +11,7 @@ namespace BookStore.DataAccess.Data
         protected readonly IConfiguration Configuration;
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -26,6 +27,34 @@ namespace BookStore.DataAccess.Data
                 new Category { Id = 2, Name = "Documentary", DisplayOrder = 2 },
                 new Category { Id = 3, Name = "Science", DisplayOrder = 3 }
             );
+
+            modelBuilder.Entity<Company>().HasData(
+                new Company { Id = 1, 
+                                Name = "Tech Solution", 
+                                StreetAddress = "111 Tesh St", 
+                                City = "Tel Aviv", 
+                                State = "IL",
+                                PostalCode = "12121",
+                                PhoneNumber = "0504999999"
+                },
+                new Company { Id = 2, 
+                                Name = "MMM Solution", 
+                                StreetAddress = "222 Tesh St", 
+                                City = "Tel Aviv", 
+                                PostalCode = "12121",
+                                State = "IL",
+                                PhoneNumber = "0504999999"
+                },
+                new Company { Id = 3, 
+                                Name = "NNN Solution", 
+                                StreetAddress = "333 Tesh St", 
+                                City = "Tel Aviv", 
+                                PostalCode = "12121",
+                                State = "IL",
+                                PhoneNumber = "0504999999"
+                }
+            );
+
             modelBuilder.Entity<Product>().HasData(
                 new Product { 
                     Id = 1, 

@@ -3,6 +3,7 @@ using System;
 using BookStore.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookStore.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250208210811_AddCompaniesModel")]
+    partial class AddCompaniesModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,70 +63,6 @@ namespace BookStore.DataAccess.Migrations
                             Id = 3,
                             DisplayOrder = 3,
                             Name = "Science"
-                        });
-                });
-
-            modelBuilder.Entity("BookStore.Models.Company", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("City")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("State")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StreetAddress")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Companies");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            City = "Tel Aviv",
-                            Name = "Tech Solution",
-                            PhoneNumber = "0504999999",
-                            PostalCode = "12121",
-                            State = "IL",
-                            StreetAddress = "111 Tesh St"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            City = "Tel Aviv",
-                            Name = "MMM Solution",
-                            PhoneNumber = "0504999999",
-                            PostalCode = "12121",
-                            State = "IL",
-                            StreetAddress = "222 Tesh St"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            City = "Tel Aviv",
-                            Name = "NNN Solution",
-                            PhoneNumber = "0504999999",
-                            PostalCode = "12121",
-                            State = "IL",
-                            StreetAddress = "333 Tesh St"
                         });
                 });
 
@@ -475,8 +414,46 @@ namespace BookStore.DataAccess.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("State")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StreetAddress")
+                        .HasColumnType("text");
+
+                    b.ToTable("AspNetUsers", t =>
+                        {
+                            t.Property("City")
+                                .HasColumnName("ApplicationUser_City");
+
+                            t.Property("Name")
+                                .HasColumnName("ApplicationUser_Name");
+
+                            t.Property("PostalCode")
+                                .HasColumnName("ApplicationUser_PostalCode");
+
+                            t.Property("State")
+                                .HasColumnName("ApplicationUser_State");
+
+                            t.Property("StreetAddress")
+                                .HasColumnName("ApplicationUser_StreetAddress");
+                        });
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
+                });
+
+            modelBuilder.Entity("BookStore.Models.Company", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -491,9 +468,7 @@ namespace BookStore.DataAccess.Migrations
                     b.Property<string>("StreetAddress")
                         .HasColumnType("text");
 
-                    b.HasIndex("CompanyId");
-
-                    b.HasDiscriminator().HasValue("ApplicationUser");
+                    b.HasDiscriminator().HasValue("Company");
                 });
 
             modelBuilder.Entity("BookStore.Models.Product", b =>
@@ -556,15 +531,6 @@ namespace BookStore.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BookStore.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("BookStore.Models.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId");
-
-                    b.Navigation("Company");
                 });
 #pragma warning restore 612, 618
         }
