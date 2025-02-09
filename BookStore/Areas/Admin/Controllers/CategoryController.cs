@@ -8,7 +8,7 @@ namespace BookStore.Areas.Admin.Controllers
 {
     
     [Area("Admin")]
-    [Authorize(Roles = SD.ROLE_ADMIN)]
+    // [Authorize(Roles = SD.ROLE_ADMIN)]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork unitOfWork;
