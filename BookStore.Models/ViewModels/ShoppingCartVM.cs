@@ -6,7 +6,7 @@ namespace BookStore.Models.ViewModels
 {
     public class ShoppingCartVM
     {
-        public double OrderTotal { get; set; }
+        public OrderHeader OrderHeader { get; set; }
         public required IEnumerable<ShoppingCart> ShoppingCartList { get; set; }
     }
 }
