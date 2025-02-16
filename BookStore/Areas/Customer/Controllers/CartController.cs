@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using BookStore.Models;
 using BookStore.Utility;
+using Stripe;
+using Stripe.BillingPortal;
 
 namespace BookStore.Areas.Customer.Controllers;
 
@@ -153,7 +155,40 @@ public class CartController : Controller
 
         if(applicationUser.CompanyId.GetValueOrDefault() == 0)
         {
-           
+            var domain = "http://localhost:5015/";
+            var options = new Stripe.Checkout.SessionCreateOptions
+            {
+                SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                CancelUrl = domain + $"customer/cart/index",
+                LineItems = new List<Stripe.Checkout.SessionLineItemOptions>(),
+                Mode = "payment",
+            };
+
+            foreach(var item in ShoppingCartVM.ShoppingCartList)
+            {
+                var sessionLineItem = new Stripe.Checkout.SessionLineItemOptions
+                {
+                    PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Price * 100),
+                        Currency = "usd",
+                        ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Product.Title
+                        }
+                    },
+                    Quantity = item.Count
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
+            var service = new Stripe.Checkout.SessionService();
+            Stripe.Checkout.Session session = service.Create(options);
+
+            unitOfWork.OrderHeaderRepository.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+            unitOfWork.Save();
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
+
         }
 
         return RedirectToAction(nameof(OrderConfirmation), 
@@ -162,6 +197,26 @@ public class CartController : Controller
 
     public IActionResult OrderConfirmation(int id)
     {
+        OrderHeader orderHeader = unitOfWork.OrderHeaderRepository.Get(u => u.Id == id, includeProperties: "ApplicationUser");
+        if(orderHeader.PaymentStatus != SD.PAYMENT_STATUS_DELAYED_PAYMENT)
+        {
+            var service = new Stripe.Checkout.SessionService();
+            Stripe.Checkout.Session session = service.Get(orderHeader.SessionId);
+
+            if(session.PaymentStatus.ToLower() == "paid")
+            {
+                unitOfWork.OrderHeaderRepository.UpdateStripePaymentId(id, session.Id, session.PaymentIntentId);
+                unitOfWork.OrderHeaderRepository.UpdateStatus(id, SD.STATUS_APPROVED, SD.PAYMENT_STATUS_APPROVED);
+                unitOfWork.Save();
+            }
+        }
+
+        List<ShoppingCart> shoppingCarts = unitOfWork.ShoppingCartRepository
+                                    .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+
+        unitOfWork.ShoppingCartRepository.RemoveRange(shoppingCarts);
+        unitOfWork.Save();
+
         return View(id);
     }
 
