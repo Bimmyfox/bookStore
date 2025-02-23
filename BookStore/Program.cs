@@ -26,6 +26,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => 
+    {
+        options.IdleTimeout = TimeSpan.FromMinutes(100);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
@@ -41,12 +49,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+string stripeSecretKey = "stripeSecret.txt";
+if(System.IO.File.Exists(stripeSecretKey))
+{
+    string key = System.IO.File.ReadAllText(stripeSecretKey).Trim();
+    builder.Configuration["Stripe:SecretKey"] = key;
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",

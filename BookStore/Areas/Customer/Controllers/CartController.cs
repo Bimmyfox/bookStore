@@ -59,9 +59,12 @@ public class CartController : Controller
 
     public IActionResult Minus(int cartId)
     {
-        var cartDb = unitOfWork.ShoppingCartRepository.Get(u => u.Id == cartId);
+        var cartDb = unitOfWork.ShoppingCartRepository.Get(u => u.Id == cartId, tracked: true);
         if (cartDb.Count <= 1)
         {
+            HttpContext.Session.SetInt32(SD.SESSION_CART, 
+                unitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == cartDb.ApplicationUserId).Count() - 1);
+       
             unitOfWork.ShoppingCartRepository.Remove(cartDb);
         }
         else
@@ -69,6 +72,16 @@ public class CartController : Controller
             cartDb.Count--;
             unitOfWork.ShoppingCartRepository.Update(cartDb);
         }
+        unitOfWork.Save();
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Remove(int cartId)
+    {
+        var cartDb = unitOfWork.ShoppingCartRepository.Get(u => u.Id == cartId, tracked: true);
+        HttpContext.Session.SetInt32(SD.SESSION_CART, 
+            unitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == cartDb.ApplicationUserId).Count() - 1);
+        unitOfWork.ShoppingCartRepository.Remove(cartDb);
         unitOfWork.Save();
         return RedirectToAction(nameof(Index));
     }
@@ -108,7 +121,7 @@ public class CartController : Controller
     [ActionName("Summary")]
     public IActionResult SummaryPOST()
     {
-          var claimsIdentity = (ClaimsIdentity)User.Identity;
+        var claimsIdentity = (ClaimsIdentity)User.Identity;
         var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
         ShoppingCartVM.ShoppingCartList = unitOfWork.ShoppingCartRepository.GetAll(
@@ -220,13 +233,7 @@ public class CartController : Controller
         return View(id);
     }
 
-    public IActionResult Remove(int cartId)
-    {
-        var cartDb = unitOfWork.ShoppingCartRepository.Get(u => u.Id == cartId);
-        unitOfWork.ShoppingCartRepository.Remove(cartDb);
-        unitOfWork.Save();
-        return RedirectToAction(nameof(Index));
-    }
+
     private double GetPriceBasedOnQuantity(ShoppingCart shoppingCart)
     {
         if(shoppingCart.Count <= 50)
