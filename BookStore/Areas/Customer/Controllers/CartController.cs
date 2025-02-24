@@ -222,6 +222,7 @@ public class CartController : Controller
                 unitOfWork.OrderHeaderRepository.UpdateStatus(id, SD.STATUS_APPROVED, SD.PAYMENT_STATUS_APPROVED);
                 unitOfWork.Save();
             }
+            HttpContext.Session.Clear();
         }
 
         List<ShoppingCart> shoppingCarts = unitOfWork.ShoppingCartRepository
