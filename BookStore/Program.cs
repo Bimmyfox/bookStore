@@ -26,6 +26,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
+string facebookSecretKey = "facebookSecret.txt";
+if(System.IO.File.Exists(facebookSecretKey))
+{
+    builder.Services.AddAuthentication().AddFacebook(option => 
+    {
+        option.AppId = "943459494659765";
+        option.AppSecret = System.IO.File.ReadAllText(facebookSecretKey).Trim();;
+    });
+}
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options => 
     {
