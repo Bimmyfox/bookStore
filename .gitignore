@@ -492,3 +492,4 @@ $RECYCLE.BIN/
 #secret key
 stripeSecret.txt
 facebookSecret.txt
+sendGridSecret.txt

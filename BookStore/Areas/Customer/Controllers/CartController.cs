@@ -8,6 +8,7 @@ using BookStore.Models;
 using BookStore.Utility;
 using Stripe;
 using Stripe.BillingPortal;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace BookStore.Areas.Customer.Controllers;
 
@@ -17,13 +18,15 @@ public class CartController : Controller
 {
 
     private readonly IUnitOfWork unitOfWork;
+    private readonly IEmailSender emailSender;
 
     [BindProperty]
     public ShoppingCartVM ShoppingCartVM { get; set; }
 
-    public CartController(IUnitOfWork unitOfWork)
+    public CartController(IUnitOfWork unitOfWork, IEmailSender emailSender)
     {
         this.unitOfWork = unitOfWork;
+        this.emailSender = emailSender;
     }
 
 
@@ -224,6 +227,9 @@ public class CartController : Controller
             }
             HttpContext.Session.Clear();
         }
+
+        emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order - Book Store",
+            $"<p>New Order Created - {orderHeader.Id}</p>");
 
         List<ShoppingCart> shoppingCarts = unitOfWork.ShoppingCartRepository
                                     .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();

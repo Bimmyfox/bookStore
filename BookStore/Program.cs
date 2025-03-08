@@ -1,5 +1,6 @@
 using BookStore.DataAccess.Data;
 using BookStore.DataAccess.Repository;
+using BookStore.DataAccess.DbInitializer;
 using BookStore.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -43,8 +44,8 @@ builder.Services.AddSession(options =>
         options.Cookie.HttpOnly = true;
         options.Cookie.IsEssential = true;
 });
-
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 var app = builder.Build();
@@ -66,6 +67,13 @@ if(System.IO.File.Exists(stripeSecretKey))
     builder.Configuration["Stripe:SecretKey"] = key;
 }
 
+string sendGridSecretKey = "sendGridSecret.txt";
+if(System.IO.File.Exists(sendGridSecretKey))
+{
+    string key = System.IO.File.ReadAllText(sendGridSecretKey).Trim();
+    builder.Configuration["SendGrid:SecretKey"] = key;
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
@@ -73,9 +81,19 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
+SeedDatabase();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+void SeedDatabase()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        dbInitializer.Initialize();
+    }
+}
