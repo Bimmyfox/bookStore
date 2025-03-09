@@ -142,7 +142,7 @@ namespace BookStore.Areas.Admin.Controllers
             OrderVM.OrderDetail = unitOfWork.OrderDetailRepository
                 .GetAll(u => u.OrderHeaderId == OrderVM.OrderHeader.Id, includeProperties: "Product");
 
-             var domain = "http://localhost:5015/";
+            var domain = Request.Scheme + "://" + Request.Host.Value + "/";
             var options = new Stripe.Checkout.SessionCreateOptions
             {
                 SuccessUrl = domain + $"admin/order/PaymentConfirmation?orderHeaderId={OrderVM.OrderHeader.Id}",

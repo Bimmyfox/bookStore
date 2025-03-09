@@ -171,7 +171,7 @@ public class CartController : Controller
 
         if(applicationUser.CompanyId.GetValueOrDefault() == 0)
         {
-            var domain = "http://localhost:5015/";
+            var domain = Request.Scheme + "://" + Request.Host.Value + "/";
             var options = new Stripe.Checkout.SessionCreateOptions
             {
                 SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
