@@ -13,5 +13,9 @@ namespace BookStore.DataAccess.Repository
         {
             db = dbContext;
         }
+
+        public void Update(ApplicationUser applicationUser) {
+            db.ApplicationUsers.Update(applicationUser);
+        }
     }
 }
