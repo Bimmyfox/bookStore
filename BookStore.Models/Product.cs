@@ -34,11 +34,10 @@ namespace BookStore.Models
 
         public string Description { get; set; }
 
-        
-        [ValidateNever]
-        public string ImageUrl { get; set; }
-
         [ValidateNever]
         public int CategoryId { get; set; }
+
+        [ValidateNever]
+        public List<ProductImage> ProductImages { get; set; }
     }
 }

@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using BookStore.Models;
 using BookStore.Utility;
-using Stripe;
-using Stripe.BillingPortal;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace BookStore.Areas.Customer.Controllers;
@@ -42,9 +40,12 @@ public class CartController : Controller
                 includeProperties: "Product"),
                 OrderHeader = new()
         };
+
+        IEnumerable<ProductImage> productImages = unitOfWork.ProductImageRepository.GetAll();
         
         foreach(var cart in ShoppingCartVM.ShoppingCartList)
         {
+            cart.Product.ProductImages = productImages.Where(u => u.ProductId == cart.Product.Id).ToList();
             cart.Price = GetPriceBasedOnQuantity(cart);
             ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
         }

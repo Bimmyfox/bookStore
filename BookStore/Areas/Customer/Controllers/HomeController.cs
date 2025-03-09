@@ -31,7 +31,7 @@ public class HomeController : Controller
                 unitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == claim.Value).Count());
         }
         
-        IEnumerable<Product> products = unitOfWork.ProductRepository.GetAll(includeProperties: "Category");
+        IEnumerable<Product> products = unitOfWork.ProductRepository.GetAll(includeProperties: "Category,ProductImages");
         return View(products);
     }
 
@@ -39,7 +39,7 @@ public class HomeController : Controller
     {
         ShoppingCart shoppingCart = new()
         {
-            Product = unitOfWork.ProductRepository.Get(u => u.Id == productId, includeProperties: "Category"),
+            Product = unitOfWork.ProductRepository.Get(u => u.Id == productId, includeProperties: "Category,ProductImages"),
             Count = 1,
             ProductId = productId
         };

@@ -9,6 +9,7 @@ namespace BookStore.DataAccess.Repository
         IShoppingCartRepository ShoppingCartRepository { get; }
         IOrderDetailRepository OrderDetailRepository { get; }
         IOrderHeaderRepository OrderHeaderRepository { get; }
+        IProductImageRepository ProductImageRepository { get; }
         void Save();
     }
 }

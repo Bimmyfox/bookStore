@@ -28,10 +28,7 @@ namespace BookStore.DataAccess.Repository
                 objFromDb.ListPrice = product.ListPrice;
                 objFromDb.Description = product.Description;
                 objFromDb.CategoryId = product.CategoryId;
-                if(product.ImageUrl != null)
-                {
-                    objFromDb.ImageUrl = product.ImageUrl;
-                }
+                objFromDb.ProductImages = product.ProductImages;
             }
         }
     }
